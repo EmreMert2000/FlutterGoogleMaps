@@ -5,17 +5,15 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:json_annotation/json_annotation.dart';
 
-part 'locations.g.dart';
-
 @JsonSerializable()
 class LatLng {
-  LatLng({
-    required this.lat,
-    required this.lng,
-  });
+  const LatLng({required this.lat, required this.lng});
 
-  factory LatLng.fromJson(Map<String, dynamic> json) => _$LatLngFromJson(json);
-  Map<String, dynamic> toJson() => _$LatLngToJson(this);
+  factory LatLng.fromJson(Map<String, dynamic> json) {
+    return LatLng(lat: json['lat'] as double, lng: json['lng'] as double);
+  }
+
+  Map<String, dynamic> toJson() => {'lat': lat, 'lng': lng};
 
   final double lat;
   final double lng;
@@ -30,8 +28,21 @@ class Region {
     required this.zoom,
   });
 
-  factory Region.fromJson(Map<String, dynamic> json) => _$RegionFromJson(json);
-  Map<String, dynamic> toJson() => _$RegionToJson(this);
+  factory Region.fromJson(Map<String, dynamic> json) {
+    return Region(
+      coords: LatLng.fromJson(json['coords'] as Map<String, dynamic>),
+      id: json['id'] as String,
+      name: json['name'] as String,
+      zoom: json['zoom'] as double,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'coords': coords.toJson(),
+    'id': id,
+    'name': name,
+    'zoom': zoom,
+  };
 
   final LatLng coords;
   final String id;
@@ -52,8 +63,29 @@ class Office {
     required this.region,
   });
 
-  factory Office.fromJson(Map<String, dynamic> json) => _$OfficeFromJson(json);
-  Map<String, dynamic> toJson() => _$OfficeToJson(this);
+  factory Office.fromJson(Map<String, dynamic> json) {
+    return Office(
+      address: json['address'] as String,
+      id: json['id'] as String,
+      image: json['image'] as String,
+      lat: json['lat'] as double,
+      lng: json['lng'] as double,
+      name: json['name'] as String,
+      phone: json['phone'] as String,
+      region: json['region'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'address': address,
+    'id': id,
+    'image': image,
+    'lat': lat,
+    'lng': lng,
+    'name': name,
+    'phone': phone,
+    'region': region,
+  };
 
   final String address;
   final String id;
@@ -67,14 +99,24 @@ class Office {
 
 @JsonSerializable()
 class Locations {
-  Locations({
-    required this.offices,
-    required this.regions,
-  });
+  Locations({required this.offices, required this.regions});
+  factory Locations.fromJson(Map<String, dynamic> json) {
+    return Locations(
+      offices:
+          (json['offices'] as List<dynamic>)
+              .map((e) => Office.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      regions:
+          (json['regions'] as List<dynamic>)
+              .map((e) => Region.fromJson(e as Map<String, dynamic>))
+              .toList(),
+    );
+  }
 
-  factory Locations.fromJson(Map<String, dynamic> json) =>
-      _$LocationsFromJson(json);
-  Map<String, dynamic> toJson() => _$LocationsToJson(this);
+  Map<String, dynamic> toJson() => {
+    'offices': offices.map((e) => e.toJson()).toList(),
+    'regions': regions.map((e) => e.toJson()).toList(),
+  };
 
   final List<Office> offices;
   final List<Region> regions;
@@ -88,7 +130,8 @@ Future<Locations> getGoogleOffices() async {
     final response = await http.get(Uri.parse(googleLocationsURL));
     if (response.statusCode == 200) {
       return Locations.fromJson(
-          json.decode(response.body) as Map<String, dynamic>);
+        json.decode(response.body) as Map<String, dynamic>,
+      );
     }
   } catch (e) {
     if (kDebugMode) {
@@ -96,10 +139,8 @@ Future<Locations> getGoogleOffices() async {
     }
   }
 
-  
   return Locations.fromJson(
-    json.decode(
-      await rootBundle.loadString('assets/locations.json'),
-    ) as Map<String, dynamic>,
+    json.decode(await rootBundle.loadString('assets/locations.json'))
+        as Map<String, dynamic>,
   );
 }

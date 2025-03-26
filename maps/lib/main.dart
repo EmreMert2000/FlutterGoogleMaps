@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Google Maps Demo',
+      title: 'OpenStreetMap Demo',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -36,25 +37,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MapScreen extends StatefulWidget {
+class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
-
-  @override
-  State<MapScreen> createState() => _MapScreenState();
-}
-
-class _MapScreenState extends State<MapScreen> {
-  GoogleMapController? mapController;
-  final Set<Marker> _markers = {};
-
-  final LatLng _center = const LatLng(
-    41.0082,
-    28.9784,
-  ); // İstanbul koordinatları
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,12 +50,33 @@ class _MapScreenState extends State<MapScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MapScreen object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: const Text('Google Maps Demo'),
+        title: const Text('OpenStreetMap Demo'),
       ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(target: _center, zoom: 11.0),
-        markers: _markers,
+      body: FlutterMap(
+        options: MapOptions(
+          center: LatLng(41.0082, 28.9784), // İstanbul koordinatları
+          zoom: 13.0,
+        ),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.maps',
+          ),
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: LatLng(41.0082, 28.9784),
+                width: 80,
+                height: 80,
+                child: const Icon(
+                  Icons.location_pin,
+                  color: Colors.red,
+                  size: 40,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
