@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/location_model.dart';
+import '../services/geocoding_service.dart';
 
 class MapViewModel extends ChangeNotifier {
   LocationModel _currentLocation;
   List<LocationModel> _markers = [];
   double _zoom = 13.0;
+
+  final GeocodingService _geoService = GeocodingService();
 
   MapViewModel()
     : _currentLocation = LocationModel(
@@ -40,5 +43,25 @@ class MapViewModel extends ChangeNotifier {
   void clearMarkers() {
     _markers = [_currentLocation];
     notifyListeners();
+  }
+
+  Future<void> searchAndAddMarker(String placeName) async {
+    final LatLng? result = await _geoService.getCoordinatesFromPlace(placeName);
+    if (result != null) {
+      addMarker(
+        LocationModel(
+          title: placeName,
+          latitude: result.latitude,
+          longitude: result.longitude,
+        ),
+      );
+      _currentLocation = LocationModel(
+        latitude: result.latitude,
+        longitude: result.longitude,
+        title: placeName,
+        description: '',
+      );
+      notifyListeners();
+    }
   }
 }
