@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../view_models/map_view_model.dart';
 
@@ -16,7 +15,8 @@ class MapView extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            title: const Text('OpenStreetMap Demo'),
+            title: const Text('Google Maps Clone'),
+            centerTitle: true,
             actions: [
               IconButton(
                 icon: const Icon(Icons.clear_all),
